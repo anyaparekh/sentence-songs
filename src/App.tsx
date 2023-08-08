@@ -1,4 +1,4 @@
-import { SpotifyApi, Scopes } from '../spotify'
+import { SpotifyApi, Scopes } from '@spotify/web-api-ts-sdk';
 import './App.css'
 import Home from './Home';
 
