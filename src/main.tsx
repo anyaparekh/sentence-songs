@@ -1,7 +1,7 @@
 import React from 'react'
 import ReactDOM from 'react-dom/client'
-import Generate from './Generate.tsx'
-import Home from './Home.tsx'
+import Generate from './pages/Generate.tsx'
+import Home from './pages/Home.tsx'
 import { RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 const router = createBrowserRouter([

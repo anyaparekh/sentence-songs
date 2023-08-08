@@ -1,5 +1,5 @@
-import EnterSentence from "./EnterSentence";
-import './Home.css'
+import EnterSentence from "../components/EnterSentence";
+import '../styles/Home.css'
 import { useNavigate } from 'react-router-dom';
 
 interface FormElements extends HTMLFormControlsCollection {
