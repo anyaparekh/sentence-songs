@@ -12,12 +12,15 @@
 }
 
 
-.sentence {
+.sentence-container {
     flex: 1;
+    margin: auto;
+}
+
+.sentence {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
     font-size: 24px;
-    margin: auto;
     border: 0;
     outline: none;
     width: 29rem;
@@ -26,4 +29,14 @@
     background: rgba(255, 255, 255, 0.75);
     flex-shrink: 0;
     backdrop-filter: blur(2px);
+}
+
+.rainbow {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+    background: radial-gradient(77.08% 59.10% at 92.97% 11.18%, rgba(143, 255, 103, 0.20) 0%, rgba(239, 215, 0, 0.20) 71.88%, rgba(239, 215, 0, 0.00) 76.56%, rgba(254, 228, 0, 0.05) 99.99%, rgba(255, 230, 0, 0.04) 100%), radial-gradient(56.75% 53.46% at 5.94% 90.81%, #35C333 0%, rgba(67, 187, 127, 0.54) 48.15%, rgba(217, 82, 203, 0.17) 100%), radial-gradient(53.99% 50.83% at 68.05% 76.20%, rgba(252, 39, 39, 0.32) 0%, rgba(71, 255, 255, 0.78) 77.60%), radial-gradient(79.95% 44.33% at 9.96% 21.87%, #C427FC 0%, rgba(71, 255, 255, 0.78) 70.61%, rgba(168, 88, 253, 0.95) 83.08%);
 }
