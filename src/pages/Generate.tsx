@@ -1,6 +1,7 @@
 import { SpotifyApi, Scopes } from '@spotify/web-api-ts-sdk';
-import { useEffect, useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import '../styles/Generate.css'
 
 const sdk = SpotifyApi.withUserAuthorization(
     import.meta.env.VITE_SPOTIFY_CLIENT_ID,
@@ -49,9 +50,34 @@ function Generate() {
 
     }, [sentence]);
 
-    return (
-        <h1>{url}</h1>
-    );
+    const link: URL = new URL(`https://open.spotify.com/oembed?url=${url}&maxwidth=700&maxheight=700`);
+
+    const [response, setResponse] = useState(new Response);
+    const [html, setHtml] = useState("");
+
+    fetch(link, {
+        method: 'GET',
+    }).then((htmlResponse) => {
+        setResponse(htmlResponse);
+        response.json().then((body) => {
+            setHtml(body.html);
+        })
+    })
+
+    useLayoutEffect(() => {
+    if (document.getElementById("embedded")){
+        document.getElementById("embedded")?.firstElementChild?.classList.add('embed');
+    }
+    });
+
+
+    return html ? (
+        <div className="embed-container">
+            <div id="embedded" dangerouslySetInnerHTML={{__html: html}} />
+        </div>
+    ) : (
+        <p>Loading...</p>
+    )
 }
 
 export default Generate;
