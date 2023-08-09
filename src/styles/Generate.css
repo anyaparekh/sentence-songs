@@ -1,0 +1,10 @@
+.embed-container {
+    height: 100%;
+    align-items: center;
+    display: flex;
+}
+
+.embed {
+    width: 700px;
+    height: 700px;
+}
