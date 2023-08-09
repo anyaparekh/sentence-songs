@@ -1,5 +1,5 @@
 import { SpotifyApi, Scopes } from '@spotify/web-api-ts-sdk';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 
 const sdk = SpotifyApi.withUserAuthorization(
@@ -9,8 +9,6 @@ const sdk = SpotifyApi.withUserAuthorization(
 );
 
 await sdk.authenticate();
-
-
 
 async function createPlaylist(sentence: string): Promise<string> {
     const top = await sdk.currentUser.topItems("tracks", undefined, 5, 0);
@@ -40,16 +38,17 @@ async function createPlaylist(sentence: string): Promise<string> {
 }
 
 function Generate() {
-    let count = 0;
     const { state } = useLocation();
     const { sentence } = state;
-    let url = "";
-    if (count == 0 && url == "") {
-        count++;
+    const [url, setUrl] = useState("");
+
+    useEffect(() => {
         createPlaylist(sentence).then((value) => {
-            url = value;
-        });
-    }
+            setUrl(value);
+        })
+
+    }, [sentence]);
+
     return (
         <h1>{url}</h1>
     );
