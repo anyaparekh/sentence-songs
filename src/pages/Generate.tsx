@@ -76,7 +76,7 @@ function Generate() {
             <div id="embedded" dangerouslySetInnerHTML={{__html: html}} />
         </div>
     ) : (
-        <p>Loading...</p>
+        <p className="loading">Loading...</p>
     )
 }
 

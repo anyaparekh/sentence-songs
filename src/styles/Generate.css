@@ -8,3 +8,9 @@
     width: 700px;
     height: 700px;
 }
+
+.loading {
+    font-family: 'Press Start 2P', cursive;
+    font-size: large;
+    color: white;
+}
