@@ -1,6 +1,9 @@
 import { SpotifyApi, Scopes } from '@spotify/web-api-ts-sdk';
 import { useEffect, useLayoutEffect, useState } from 'react';
 import { useLocation } from 'react-router-dom';
+import Back from '../components/Back';
+import { useNavigate } from 'react-router-dom';
+
 import '../styles/Generate.css'
 
 const sdk = SpotifyApi.withUserAuthorization(
@@ -16,13 +19,13 @@ async function createPlaylist(sentence: string): Promise<string> {
     const topfivetracks = top.items.map((obj) => obj.id);
 
     const recs = await sdk.recommendations.get({
-        seed_tracks: topfivetracks,
-        target_acousticness: Math.random(),
-        target_danceability: Math.random(),
-        target_energy: Math.random(),
-        target_instrumentalness: Math.random(),
-        target_liveness: Math.random(),
-        target_loudness: Math.random()
+        seed_artists: topfivetracks,
+        target_acousticness: 0.5,
+        target_danceability: 0.6,
+        target_energy: 0.4,
+        target_instrumentalness: 0.2,
+        target_liveness: 0.3,
+        target_loudness: 0.5
     });
     
     const profile = await sdk.currentUser.profile();
@@ -42,6 +45,12 @@ function Generate() {
     const { state } = useLocation();
     const { sentence } = state;
     const [url, setUrl] = useState("");
+
+    const navigate = useNavigate();
+
+    const handleClick = () => {
+        navigate('/');
+    }
 
     useEffect(() => {
         createPlaylist(sentence).then((value) => {
@@ -72,9 +81,17 @@ function Generate() {
 
 
     return html ? (
-        <div className="embed-container">
-            <div id="embedded" dangerouslySetInnerHTML={{__html: html}} />
-        </div>
+        <>
+            <div className='back' onClick={handleClick} >
+                <Back />
+            </div>
+            <div className='playlist-container'>
+                <p className='text'>your custom playlist</p>
+                <div className="embed-container">
+                    <div id="embedded" dangerouslySetInnerHTML={{__html: html}} />
+                </div>
+            </div>
+        </>
     ) : (
         <p className="loading">Loading...</p>
     )
