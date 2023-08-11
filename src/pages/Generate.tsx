@@ -14,18 +14,19 @@ const sdk = SpotifyApi.withUserAuthorization(
 
 await sdk.authenticate();
 
-async function createPlaylist(sentence: string): Promise<string> {
+async function CreatePlaylist(map: any, sentence: string): Promise<string> {
+
     const top = await sdk.currentUser.topItems("tracks", undefined, 5, 0);
     const topfivetracks = top.items.map((obj) => obj.id);
 
     const recs = await sdk.recommendations.get({
-        seed_artists: topfivetracks,
-        target_acousticness: 0.5,
-        target_danceability: 0.6,
-        target_energy: 0.4,
-        target_instrumentalness: 0.2,
-        target_liveness: 0.3,
-        target_loudness: 0.5
+        seed_tracks: topfivetracks,
+        target_acousticness: map['acousticness'],
+        target_danceability: map['danceability'],
+        target_energy: map['energy'],
+        target_instrumentalness: map['instrumentalness'],
+        target_liveness: map['liveness'],
+        target_loudness: map['loudness']
     });
     
     const profile = await sdk.currentUser.profile();
@@ -45,6 +46,9 @@ function Generate() {
     const { state } = useLocation();
     const { sentence } = state;
     const [url, setUrl] = useState("");
+    const [response, setResponse] = useState(new Response);
+    const [html, setHtml] = useState("");
+    const [map, setMap] = useState(Object);
 
     const navigate = useNavigate();
 
@@ -53,25 +57,32 @@ function Generate() {
     }
 
     useEffect(() => {
-        createPlaylist(sentence).then((value) => {
-            setUrl(value);
+        fetch("http://localhost:3000/api/serverless?" + new URLSearchParams({
+            query: sentence
+        }), {
+            method: 'GET',
+        }).then((response) => {
+            if (response.body != null) {
+                console.log(response.json());
+                setMap(response.json());
+                console.log(map);
+            }
+            CreatePlaylist(map, sentence).then((value) => {
+                setUrl(value);
+            })
+            const link: URL = new URL(`https://open.spotify.com/oembed?url=${url}&maxwidth=700&maxheight=700`);
+    
+            fetch(link, {
+                method: 'GET',
+            }).then((htmlResponse) => {
+                setResponse(htmlResponse);
+                response.json().then((body) => {
+                    setHtml(body.html);
+                })
+            })
         })
-
-    }, [sentence]);
-
-    const link: URL = new URL(`https://open.spotify.com/oembed?url=${url}&maxwidth=700&maxheight=700`);
-
-    const [response, setResponse] = useState(new Response);
-    const [html, setHtml] = useState("");
-
-    fetch(link, {
-        method: 'GET',
-    }).then((htmlResponse) => {
-        setResponse(htmlResponse);
-        response.json().then((body) => {
-            setHtml(body.html);
-        })
-    })
+        
+    }, [sentence, response, url, map]);
 
     useLayoutEffect(() => {
     if (document.getElementById("embedded")){
