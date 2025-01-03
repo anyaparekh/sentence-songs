@@ -1,111 +1,136 @@
-import { SpotifyApi, Scopes } from '@spotify/web-api-ts-sdk';
-import { useEffect, useLayoutEffect, useState } from 'react';
-import { useLocation } from 'react-router-dom';
-import Back from '../components/Back';
-import { useNavigate } from 'react-router-dom';
+import { SpotifyApi, Scopes, SearchResults } from "@spotify/web-api-ts-sdk";
+import { useEffect, useLayoutEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import Back from "../components/Back";
+import { useNavigate } from "react-router-dom";
+import { queryOpenAI } from "../utils/openai";
 
-import '../styles/Generate.css'
+import "../styles/Generate.css";
 
 const sdk = SpotifyApi.withUserAuthorization(
-    import.meta.env.VITE_SPOTIFY_CLIENT_ID,
-    import.meta.env.VITE_REDIRECT_TARGET,
-    Scopes.all
+  import.meta.env.VITE_SPOTIFY_CLIENT_ID,
+  import.meta.env.VITE_REDIRECT_TARGET,
+  Scopes.all
 );
 
-await sdk.authenticate();
+async function CreatePlaylist(map: any, sentence: string) {
+  let recs: string[] = [];
+  console.log(map[0]);
+  for (let song in map[0]) {
+    const updatedSong = song.replaceAll(" ", "%20");
+    const artist = map[0][song].replaceAll(" ", "%20");
+    const res: SearchResults = await sdk.search(
+      `track:${updatedSong}%20artist:${artist}`,
+      ["track"],
+      undefined,
+      1
+    );
+    if (res.tracks.items.length > 0) {
+      recs.push(res.tracks.items[0].uri);
+    }
+  }
+  if (recs.length == 0) {
+    return null;
+  }
 
-async function CreatePlaylist(map: any, sentence: string): Promise<string> {
+  const profile = await sdk.currentUser.profile();
+  const id = profile.id;
 
-    const top = await sdk.currentUser.topItems("tracks", undefined, 5, 0);
-    const topfivetracks = top.items.map((obj) => obj.id);
+  const playlist = await sdk.playlists.createPlaylist(id, {
+    name: sentence,
+    public: false,
+  });
 
-    const recs = await sdk.recommendations.get({
-        seed_tracks: topfivetracks,
-        target_acousticness: map['acousticness'],
-        target_danceability: map['danceability'],
-        target_energy: map['energy'],
-        target_instrumentalness: map['instrumentalness'],
-        target_liveness: map['liveness'],
-        target_loudness: map['loudness']
-    });
-    
-    const profile = await sdk.currentUser.profile();
-    const id = profile.id;
+  await sdk.playlists.addItemsToPlaylist(playlist.id, recs);
 
-    const playlist = await sdk.playlists.createPlaylist(id, {
-        "name": sentence,
-        "public": false
-    });
-
-    await sdk.playlists.addItemsToPlaylist(playlist.id, recs.tracks.map((t) => t.uri));
-
-    return playlist.external_urls.spotify;
+  return playlist.external_urls.spotify;
 }
 
 function Generate() {
-    const { state } = useLocation();
-    const { sentence } = state;
-    const [url, setUrl] = useState("");
-    const [response, setResponse] = useState(new Response);
-    const [html, setHtml] = useState("");
-    const [map, setMap] = useState(Object);
+  const { state } = useLocation();
+  const { sentence } = state;
+  const [html, setHtml] = useState("");
+  const [error, setError] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleClick = () => {
-        navigate('/');
+  const handleClick = () => {
+    navigate("/");
+  };
+
+  useEffect(() => {
+    async function authenticate() {
+      try {
+        await sdk.authenticate();
+        setIsAuthenticated(true);
+        console.log("done");
+      } catch (error) {
+        console.error("Authentication failed:", error);
+      }
+    }
+    authenticate();
+  }, []);
+
+  useEffect(() => {
+    if (!isAuthenticated) return;
+
+    async function generateRes() {
+      let response = (await queryOpenAI(sentence)) || "{}";
+      console.log(response);
+      console.log(JSON.parse(response));
+
+      CreatePlaylist(JSON.parse(response), sentence).then((value) => {
+        if (value == null) {
+          setError(true);
+        }
+        const link: URL = new URL(
+          `https://open.spotify.com/oembed?url=${value}&maxwidth=700&maxheight=700`
+        );
+
+        fetch(link, {
+          method: "GET",
+        }).then((htmlResponse) => {
+          htmlResponse.json().then((body) => {
+            setHtml(body.html);
+          });
+        });
+      });
     }
 
-    useEffect(() => {
-        fetch("http://localhost:3000/api/serverless?" + new URLSearchParams({
-            query: sentence
-        }), {
-            method: 'GET',
-        }).then((response) => {
-            if (response.body != null) {
-                console.log(response.json());
-                setMap(response.json());
-                console.log(map);
-            }
-            CreatePlaylist(map, sentence).then((value) => {
-                setUrl(value);
-            })
-            const link: URL = new URL(`https://open.spotify.com/oembed?url=${url}&maxwidth=700&maxheight=700`);
-    
-            fetch(link, {
-                method: 'GET',
-            }).then((htmlResponse) => {
-                setResponse(htmlResponse);
-                response.json().then((body) => {
-                    setHtml(body.html);
-                })
-            })
-        })
-        
-    }, [sentence, response, url, map]);
+    generateRes();
+  }, []);
 
-    useLayoutEffect(() => {
-    if (document.getElementById("embedded")){
-        document.getElementById("embedded")?.firstElementChild?.classList.add('embed');
+  useLayoutEffect(() => {
+    if (document.getElementById("embedded")) {
+      document
+        .getElementById("embedded")
+        ?.firstElementChild?.classList.add("embed");
     }
-    });
+  });
 
-
-    return html ? (
-        <>
-            <div className='back' onClick={handleClick} >
-                <Back />
-            </div>
-            <div className='playlist-container'>
-                <p className='text'>your custom playlist</p>
-                <div className="embed-container">
-                    <div id="embedded" dangerouslySetInnerHTML={{__html: html}} />
-                </div>
-            </div>
-        </>
-    ) : (
-        <p className="loading">Loading...</p>
-    )
+  return html ? (
+    <>
+      <div className="back" onClick={handleClick}>
+        <Back />
+      </div>
+      <div className="playlist-container">
+        <p className="text">your custom playlist</p>
+        <div className="embed-container">
+          <div id="embedded" dangerouslySetInnerHTML={{ __html: html }} />
+        </div>
+      </div>
+    </>
+  ) : error ? (
+    <>
+      <div className="back" onClick={handleClick}>
+        <Back />
+      </div>
+      <p className="loading">Error :(</p>
+    </>
+  ) : (
+    <p className="loading">Loading...</p>
+  );
 }
 
 export default Generate;

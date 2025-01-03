@@ -1,23 +1,23 @@
-import ReactDOM from 'react-dom/client'
-import Generate from './pages/Generate.tsx'
-import Home from './pages/Home.tsx'
-import { RouterProvider, createBrowserRouter } from 'react-router-dom'
+import ReactDOM from "react-dom/client";
+import Generate from "./pages/Generate.tsx";
+import Home from "./pages/Home.tsx";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home/>,
+    element: <Home />,
   },
   {
     path: "/generate",
-    element: <Generate/>,
-  }
+    element: <Generate />,
+  },
 ]);
 
-ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
+ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
   <>
-    <div className='rainbow'>
+    <div className="rainbow">
       <RouterProvider router={router} />
     </div>
   </>
-)
+);

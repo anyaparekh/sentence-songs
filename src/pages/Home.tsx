@@ -1,33 +1,36 @@
 import EnterSentence from "../components/EnterSentence";
-import '../styles/Home.css'
-import { useNavigate } from 'react-router-dom';
+import "../styles/Home.css";
+import { useNavigate } from "react-router-dom";
 
 interface FormElements extends HTMLFormControlsCollection {
-    sentence: HTMLInputElement
+  sentence: HTMLInputElement;
 }
 
 interface FormElement extends HTMLFormElement {
-    readonly elements: FormElements
+  readonly elements: FormElements;
 }
 
 function Home() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const handleSubmit = (event: React.FormEvent<FormElement>) => {
-        event.preventDefault();
-        navigate('/generate', { state: { sentence: event.currentTarget.elements.sentence.value } });
-    }
+  const handleSubmit = (event: React.FormEvent<FormElement>) => {
+    event.preventDefault();
+    console.log(event.currentTarget.elements.sentence.value);
+    navigate("/generate", {
+      state: { sentence: event.currentTarget.elements.sentence.value },
+    });
+  };
 
-    return (
-        <div className="container">
-            <div className="header-container">
-                <EnterSentence />
-            </div>
-            <form className="sentence-container" onSubmit={handleSubmit}>
-                <input className="sentence" id="sentence" type="text" />
-            </form>
-        </div>
-    );
+  return (
+    <div className="container">
+      <div className="header-container">
+        <EnterSentence />
+      </div>
+      <form className="sentence-container" onSubmit={handleSubmit}>
+        <input className="sentence" id="sentence" type="text" />
+      </form>
+    </div>
+  );
 }
 
 export default Home;

@@ -2,7 +2,6 @@
     flex: 5;
     display: flex;
     justify-content: center;
-    margin-left: 100px;
 }
 
 .embed {
@@ -23,21 +22,20 @@
 }
 
 .playlist-container {
-    width: 80%;
+    height: 80%;
+    justify-content: center;
     display: flex;
-    flex-direction: row;
+    flex-direction: column;
 }
 
 .text {
-    position: absolute;
     vertical-align: middle;
     align-self: center;
     white-space: nowrap;
     flex: 1;
     width: 483px;
     height: 111px;
-    transform: rotate(-90deg);
-    background: linear-gradient(180deg, #FFF 0%, rgba(255, 255, 255, 0.96) 6.25%, rgba(255, 255, 255, 0.00) 60.58%, rgba(255, 255, 255, 0.00) 100%);
+    background: linear-gradient(180deg,rgba(255, 255, 255, 0.9) 0%,rgba(255, 255, 255, 1) 25%,rgba(255, 255, 255, 0.8) 60%,rgba(255, 255, 255, 0.3) 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
